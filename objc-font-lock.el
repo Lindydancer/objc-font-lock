@@ -5,7 +5,8 @@
 ;; Author: Anders Lindgren
 ;; Keywords: languages, faces
 ;; Created: 2013-11-26
-;; Version: 0.0.0
+;; Version: 0.0.1
+;; URL: https://github.com/Lindydancer/objc-font-lock
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -41,21 +42,38 @@
 
 ;; Usage:
 ;;
-;; Place the source file in a directory in the load path. Add the
-;; following lines to an appropriate init file:
+;; Place the source file in a directory in the load path.
 ;;
-;;    (autoload 'objc-font-lock-setup "objc-font-lock" nil t)
-;;    (add-hook 'objc-mode-hook 'objc-font-lock-setup)
+;; You can either enable a *global mode*, add the following lines to
+;; an appropriate init file:
+;;
+;;    (require 'objc-font-lock)
+;;    (objc-font-lock-global-mode)
+;;
+;; *Or*, you could enable a *normal mode* from a mode hook:
+;;
+;;    (autoload 'objc-font-lock-mode "objc-font-lock" nil t)
+;;
+;; If you are using Emacs 24 or newer, you can use:
+;;
+;;    (add-hook 'objc-mode-hook 'objc-font-lock-mode)
+;;
+;; For older Emacs versions, you have to call this from a hook
+;; function, for example:
+;;
+;;    (defun my-objc-mode-hook ()
+;;       (objc-font-lock-mode 1))
+;;    (add-hook 'objc-mode-hook 'my-objc-mode-hook)
 ;;
 ;; Custom configuration:
 ;;
-;; Method calls are highlighted as follows
+;; Method calls are highlighted as follows:
 ;;
 ;;                             Controlling variable:           Default:
 ;;     [expr func: expr]
-;;     ^               ^ - objc-font-lock-bracket-face       Warning face
-;;           ^^^^        - objc-font-lock-function-name-face Function name face
-;;     ^^^^^^^^^^^^^^^^^ - objc-font-lock-background-face    Grey 85
+;;     ^               ^-- objc-font-lock-bracket-face       Warning face
+;;           ^^^^--------- objc-font-lock-function-name-face Function name face
+;;     ^^^^^^^^^^^^^^^^^-- objc-font-lock-background-face    Grey 85
 ;;
 ;; To change the face used, change the face variable. By setting it to
 ;; "nil", the corresponding part of the method call will not be
@@ -77,7 +95,7 @@
 
 ;; Implementation:
 ;;
-;; An Objective-C method call is on one the following forms
+;; An Objective-C method call is on one the following forms:
 ;;
 ;;     [expression func]
 ;;     [expression func: expression func: expression....]
@@ -135,33 +153,34 @@
   :group 'objc-font-lock)
 
 
+(defcustom objc-font-lock-modes '(objc-mode)
+  "List of major modes where Objc Font Lock Global mode should be enabled."
+  :type '(repeat symbol)
+  :group 'objc-font-lock)
+
+
 ;; ------------------------------
 ;; Font-lock rules and Setup function
 ;;
 
-(defun objc-font-lock-setup ()
-  "Highlight Objective-C method calls."
-  (setq font-lock-multiline t)
+(defvar objc-font-lock-prepend-keywords
   ;; --------------------
   ;; Brackets and function names.
-  (font-lock-add-keywords
-   nil
-   '((objc-font-lock-match-bracket
-      (1 objc-font-lock-bracket-face)
-      (3 objc-font-lock-bracket-face)
-      (objc-font-lock-match-bracket-content
-       ;; PRE-MATCH-FORM:
-       (objc-font-lock-match-bracket-pre-match)
-       ;; POST-MATCH-FORM:
-       (objc-font-lock-match-bracket-post-match)
-       ;; Highlight.
-       (0 objc-font-lock-function-name-face nil t)))))
+  '((objc-font-lock-match-bracket
+     (1 objc-font-lock-bracket-face)
+     (3 objc-font-lock-bracket-face)
+     (objc-font-lock-match-bracket-content
+      ;; PRE-MATCH-FORM:
+      (objc-font-lock-match-bracket-pre-match)
+      ;; POST-MATCH-FORM:
+      (objc-font-lock-match-bracket-post-match)
+      ;; Highlight.
+      (0 objc-font-lock-function-name-face nil t)))))
+
+
+(defvar objc-font-lock-append-keywords
   ;; --------------------
-  ;; Background.
-  ;;
-  ;; Separate rule, to ensure that nested method calls work.
-  (font-lock-add-keywords
-   nil
+  ;; Brackets and function names.
    '((objc-font-lock-match-bracket
       (objc-font-lock-match-line
        ;; PRE-MATCH-FORM:
@@ -170,8 +189,52 @@
          (match-end 0))
        ;; POST-MATCH-FORM:
        (goto-char (match-end 1))
-       (0 objc-font-lock-background-face append))))
+       (0 objc-font-lock-background-face append)))))
+
+
+(defun objc-font-lock-add-keywords ()
+  "Add font-lock keywords to highlight Objective-C method calls."
+  (setq font-lock-multiline t)
+  (font-lock-add-keywords
+   nil
+   objc-font-lock-prepend-keywords)
+  ;; --------------------
+  ;; Background.
+  ;;
+  ;; Separate rule, to ensure that nested method calls work.
+  (font-lock-add-keywords
+   nil
+   objc-font-lock-append-keywords
    'append))
+
+
+(defun objc-font-lock-remove-keywords ()
+  "Remove font-lock keywords for highlighting Objective-C method calls."
+  (font-lock-remove-keywords nil
+   objc-font-lock-prepend-keywords)
+  (font-lock-remove-keywords nil
+   objc-font-lock-append-keywords))
+
+
+;;;###autoload
+(define-minor-mode objc-font-lock-mode
+  "Minor mode, highlight Objective-C method calls."
+  :group 'objc-font-lock
+  (if objc-font-lock-mode
+      (objc-font-lock-add-keywords)
+    (objc-font-lock-remove-keywords))
+  (when font-lock-mode
+    (font-lock-fontify-buffer)))
+
+
+;;;###autoload
+(define-global-minor-mode objc-font-lock-global-mode objc-font-lock-mode
+  ;; Bizarre interface, `define-global-minor-mode' can automatically
+  ;; disable the minor mode, but must have this code to turn it on.
+  (lambda ()
+    (when (apply 'derived-mode-p objc-font-lock-modes)
+      (objc-font-lock-mode 1)))
+  :group 'objc-font-lock)
 
 
 ;; --------------------

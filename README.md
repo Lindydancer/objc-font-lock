@@ -1,7 +1,8 @@
 # objc-font-lock - Highlight Objective-C method calls
 
 *Author:* Anders Lindgren<br>
-*Version:* 0.0.0<br>
+*Version:* 0.0.1<br>
+*URL:* [https://github.com/Lindydancer/objc-font-lock](https://github.com/Lindydancer/objc-font-lock)<br>
 
 This package highlights Objective-C method calls.
 
@@ -22,21 +23,38 @@ this package:
 
 ## Usage
 
-Place the source file in a directory in the load path. Add the
-following lines to an appropriate init file:
+Place the source file in a directory in the load path.
 
-       (autoload 'objc-font-lock-setup "objc-font-lock" nil t)
-       (add-hook 'objc-mode-hook 'objc-font-lock-setup)
+You can either enable a *global mode*, add the following lines to
+an appropriate init file:
+
+       (require 'objc-font-lock)
+       (objc-font-lock-global-mode)
+
+*Or*, you could enable a *normal mode* from a mode hook:
+
+       (autoload 'objc-font-lock-mode "objc-font-lock" nil t)
+
+If you are using Emacs 24 or newer, you can use:
+
+       (add-hook 'objc-mode-hook 'objc-font-lock-mode)
+
+For older Emacs versions, you have to call this from a hook
+function, for example:
+
+       (defun my-objc-mode-hook ()
+          (objc-font-lock-mode 1))
+       (add-hook 'objc-mode-hook 'my-objc-mode-hook)
 
 ### Custom configuration
 
-Method calls are highlighted as follows
+Method calls are highlighted as follows:
 
                             Controlling variable:           Default:
     [expr func: expr]
-    ^               ^ - objc-font-lock-bracket-face       Warning face
-          ^^^^        - objc-font-lock-function-name-face Function name face
-    ^^^^^^^^^^^^^^^^^ - objc-font-lock-background-face    Grey 85
+    ^               ^-- objc-font-lock-bracket-face       Warning face
+          ^^^^--------- objc-font-lock-function-name-face Function name face
+    ^^^^^^^^^^^^^^^^^-- objc-font-lock-background-face    Grey 85
 
 To change the face used, change the face variable. By setting it to
 "nil", the corresponding part of the method call will not be
@@ -58,7 +76,7 @@ Objective-C.
 
 ## Implementation
 
-An Objective-C method call is on one the following forms
+An Objective-C method call is on one the following forms:
 
     [expression func]
     [expression func: expression func: expression....]
