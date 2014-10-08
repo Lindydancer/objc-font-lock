@@ -1,7 +1,7 @@
 # objc-font-lock - Highlight Objective-C method calls
 
 *Author:* Anders Lindgren<br>
-*Version:* 0.0.1<br>
+*Version:* 0.0.2<br>
 *URL:* [https://github.com/Lindydancer/objc-font-lock](https://github.com/Lindydancer/objc-font-lock)<br>
 
 This package highlights Objective-C method calls.
@@ -16,37 +16,22 @@ they are different from normal C function calls.
 By highlighting method calls, it is possible to read the same piece
 of code faster and more accurate.
 
+By default, the open and close bracket is highligted using a bright
+warning face, the entire method call is highligthed using a grey
+background face, and each Objective-C function name component is
+highlighted using the font-lock function name face.
+
 The following screenshot demonstrates the highlighting effect of
 this package:
 
 ![See doc/demo.png for screenshot](doc/demo.png)
 
-## Usage
+## Installation
 
-Place the source file in a directory in the load path.
+This package is designed to be installed as a "package". Once
+installed, it is automatically activated.
 
-You can either enable a *global mode*, add the following lines to
-an appropriate init file:
-
-       (require 'objc-font-lock)
-       (objc-font-lock-global-mode)
-
-*Or*, you could enable a *normal mode* from a mode hook:
-
-       (autoload 'objc-font-lock-mode "objc-font-lock" nil t)
-
-If you are using Emacs 24 or newer, you can use:
-
-       (add-hook 'objc-mode-hook 'objc-font-lock-mode)
-
-For older Emacs versions, you have to call this from a hook
-function, for example:
-
-       (defun my-objc-mode-hook ()
-          (objc-font-lock-mode 1))
-       (add-hook 'objc-mode-hook 'my-objc-mode-hook)
-
-### Custom configuration
+## Customization
 
 Method calls are highlighted as follows:
 
@@ -109,4 +94,4 @@ any construct that looks like a cast as though it is a cast.
 
 
 ---
-Converted from `objc-font-lock.el` by [*el2markup*](https://github.com/Lindydancer/el2markdown).
+Converted from `objc-font-lock.el` by [*el2markdown*](https://github.com/Lindydancer/el2markdown).

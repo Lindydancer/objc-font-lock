@@ -1,4 +1,4 @@
-;;; objc-font-lock-test-facit.el -- Regression test for Objc Font Lock.
+;;; objc-font-lock-test-facit.el --- Regression test for Objc Font Lock.
 
 ;; Copyright (C) 2014 Anders Lindgren
 
@@ -31,29 +31,23 @@
 
 ;;; Code:
 
-(defvar objc-font-lock-test-facit-file-name load-file-name
-  "The file name of this file.")
+(require 'faceup)
 
-(defun objc-font-lock-test-facit-file-name ()
-  "The filename of this source file."
-  (or objc-font-lock-test-facit-file-name
-      (symbol-file 'objc-font-lock-test-facit-file-name)))
+(defvar objc-font-lock-test-facit-dir (faceup-this-file-directory)
+  "The directory this file is located in.")
 
 (defun objc-font-lock-test-facit (file)
-  "Test that FILE is fontifies as the .faceup file describes.
+  "Test that Objective-C FILE is fontified as the .faceup file describes.
 
 FILE is interpreted as relative to this source directory."
   (faceup-test-font-lock-file 'objc-mode
                               (concat
-                               (file-name-directory
-                                (objc-font-lock-test-facit-file-name))
+                               objc-font-lock-test-facit-dir
                                file)))
-
 (faceup-defexplainer objc-font-lock-test-facit)
 
 
 (ert-deftest objc-font-lock-file-test ()
-  (require 'faceup)
   (should (objc-font-lock-test-facit "facit/Emacs/nsterm.m")))
 
 ;; objc-font-lock-test-facit.el ends here.

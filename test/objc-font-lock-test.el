@@ -1,4 +1,4 @@
-;; objc-font-lock-test.el -- Tests for Objc Font Lock.
+;; objc-font-lock-test.el --- Tests for Objc Font Lock.
 
 ;; Copyright (C) 2014 Anders Lindgren
 

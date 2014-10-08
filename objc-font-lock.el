@@ -1,11 +1,11 @@
-;; objc-font-lock.el -- Highlight Objective-C method calls.
+;;; objc-font-lock.el --- Highlight Objective-C method calls.
 
 ;; Copyright (C) 2013-2014 Anders Lindgren
 
 ;; Author: Anders Lindgren
 ;; Keywords: languages, faces
 ;; Created: 2013-11-26
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; URL: https://github.com/Lindydancer/objc-font-lock
 
 ;; This program is free software: you can redistribute it and/or modify
@@ -35,37 +35,22 @@
 ;; By highlighting method calls, it is possible to read the same piece
 ;; of code faster and more accurate.
 ;;
+;; By default, the open and close bracket is highligted using a bright
+;; warning face, the entire method call is highligthed using a grey
+;; background face, and each Objective-C function name component is
+;; highlighted using the font-lock function name face.
+;;
 ;; The following screenshot demonstrates the highlighting effect of
 ;; this package:
 ;;
 ;; ![See doc/demo.png for screenshot](doc/demo.png)
 
-;; Usage:
+;; Installation:
 ;;
-;; Place the source file in a directory in the load path.
-;;
-;; You can either enable a *global mode*, add the following lines to
-;; an appropriate init file:
-;;
-;;    (require 'objc-font-lock)
-;;    (objc-font-lock-global-mode)
-;;
-;; *Or*, you could enable a *normal mode* from a mode hook:
-;;
-;;    (autoload 'objc-font-lock-mode "objc-font-lock" nil t)
-;;
-;; If you are using Emacs 24 or newer, you can use:
-;;
-;;    (add-hook 'objc-mode-hook 'objc-font-lock-mode)
-;;
-;; For older Emacs versions, you have to call this from a hook
-;; function, for example:
-;;
-;;    (defun my-objc-mode-hook ()
-;;       (objc-font-lock-mode 1))
-;;    (add-hook 'objc-mode-hook 'my-objc-mode-hook)
-;;
-;; Custom configuration:
+;; This package is designed to be installed as a "package". Once
+;; installed, it is automatically activated.
+
+;; Customization:
 ;;
 ;; Method calls are highlighted as follows:
 ;;
@@ -134,25 +119,32 @@
 
 (defface objc-font-lock-background-face
   '((((class color) (background light)) (:background "Grey85")))
-  "The face used to highlight an entire Objective-C method call."
+  "The default face used to highlight an entire Objective-C method call."
   :group 'objc-font-lock)
+
 
 ;; Here, standard Font Lock faces are utilized as much as possible.
 ;; Unfortunately, there is no suitable backgraound face.
 (defcustom objc-font-lock-bracket-face       'font-lock-warning-face
-  "The face used to highlight brackets in Objective-C method calls."
-  :type 'face
+  "The face used to highlight brackets in Objective-C method calls.
+To disable this highlighting, set this to `nil'."
+  :type '(choice (const nil)
+                 face)
   :group 'objc-font-lock)
 (defcustom objc-font-lock-function-name-face 'font-lock-function-name-face
-  "The face used to highlight function names in Objective-C method calls."
-  :type 'face
+  "The face used to highlight function names in Objective-C method calls.
+To disable this highlighting, set this to `nil'."
+  :type '(choice (const nil)
+                 face)
   :group 'objc-font-lock)
 (defcustom objc-font-lock-background-face    'objc-font-lock-background-face
-  "The face used to highlight an entire Objective-C method call."
-  :type 'face
+  "The face used to highlight an entire Objective-C method call.
+To disable this highlighting, set this to `nil'."
+  :type '(choice (const nil)
+                 face)
   :group 'objc-font-lock)
 
-
+;;;###autoload
 (defcustom objc-font-lock-modes '(objc-mode)
   "List of major modes where Objc Font Lock Global mode should be enabled."
   :type '(repeat symbol)
@@ -160,7 +152,7 @@
 
 
 ;; ------------------------------
-;; Font-lock rules and Setup function
+;; Font-lock rules and setup function
 ;;
 
 (defvar objc-font-lock-prepend-keywords
@@ -210,31 +202,47 @@
 
 (defun objc-font-lock-remove-keywords ()
   "Remove font-lock keywords for highlighting Objective-C method calls."
-  (font-lock-remove-keywords nil
-   objc-font-lock-prepend-keywords)
-  (font-lock-remove-keywords nil
-   objc-font-lock-append-keywords))
+  (font-lock-remove-keywords nil objc-font-lock-prepend-keywords)
+  (font-lock-remove-keywords nil objc-font-lock-append-keywords))
 
 
+;; Note: Broken out from `define-minor-mode objc-font-lock' to reduce
+;; the amount of code placed in the package autoload file.
 ;;;###autoload
-(define-minor-mode objc-font-lock-mode
-  "Minor mode, highlight Objective-C method calls."
-  :group 'objc-font-lock
+(defun objc-font-lock-mode-enable-or-disable ()
+  "Enable or disable Objc Font Lock Mode."
   (if objc-font-lock-mode
       (objc-font-lock-add-keywords)
     (objc-font-lock-remove-keywords))
-  (when font-lock-mode
-    (font-lock-fontify-buffer)))
+  ;; As of Emacs 24.4, `font-lock-fontify-buffer' is not legal to
+  ;; call, instead `font-lock-flush' should be used.
+  (if (fboundp 'font-lock-flush)
+      (font-lock-flush)
+    (when font-lock-mode
+      (with-no-warnings
+        (font-lock-fontify-buffer)))))
 
+
+;; Note: Without the "progn", plain autoloads for the functions,
+;; rather than the full call to the define functions, are placed in
+;; the generated autoload file, when installed as a package.
 
 ;;;###autoload
-(define-global-minor-mode objc-font-lock-global-mode objc-font-lock-mode
-  ;; Bizarre interface, `define-global-minor-mode' can automatically
-  ;; disable the minor mode, but must have this code to turn it on.
-  (lambda ()
-    (when (apply 'derived-mode-p objc-font-lock-modes)
-      (objc-font-lock-mode 1)))
-  :group 'objc-font-lock)
+(progn
+  (define-minor-mode objc-font-lock-mode
+    "Minor mode that highlights Objective-C method calls."
+    :group 'objc-font-lock
+    (objc-font-lock-mode-enable-or-disable))
+
+  (define-global-minor-mode objc-font-lock-global-mode objc-font-lock-mode
+    (lambda ()
+      (when (apply 'derived-mode-p objc-font-lock-modes)
+        (objc-font-lock-mode 1)))
+    :group 'objc-font-lock
+    :init-value t)
+
+  (when objc-font-lock-global-mode
+    (objc-font-lock-global-mode 1)))
 
 
 ;; --------------------
@@ -499,7 +507,4 @@ similar expression without those constructs."
               (t
                nil)))))
 
-
-
-
-;; objc-font-lock.el ends here.
+;;; objc-font-lock.el ends here.
