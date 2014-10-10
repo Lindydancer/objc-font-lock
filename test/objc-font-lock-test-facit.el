@@ -50,4 +50,6 @@ FILE is interpreted as relative to this source directory."
 (ert-deftest objc-font-lock-file-test ()
   (should (objc-font-lock-test-facit "facit/Emacs/nsterm.m")))
 
+(provide 'objc-font-lock-test-facit)
+
 ;; objc-font-lock-test-facit.el ends here.

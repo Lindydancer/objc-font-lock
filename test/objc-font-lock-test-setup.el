@@ -18,16 +18,20 @@
 
 ;;; Code:
 
-(add-to-list 'load-path (expand-file-name ".."))
-(add-to-list 'load-path (expand-file-name "../../faceup"))
-(add-to-list 'load-path (expand-file-name "../../../lisp"))
-
-(load-file "../objc-font-lock.el")
-(objc-font-lock-global-mode 1)
-
-(load-file "objc-font-lock-test-facit.el")
-
 (setq inhibit-startup-screen t)
+(prefer-coding-system 'utf-8)
+
+(defvar objc-font-lock-test-setup-directory
+  (if load-file-name
+      (file-name-directory load-file-name)
+    default-directory))
+
+(dolist (dir '("." ".." "../../faceup"))
+  (add-to-list 'load-path (concat objc-font-lock-test-setup-directory dir)))
+
+(require 'objc-font-lock)
+(require 'objc-font-lock-test-facit)
+
 (ert t)
 
 ;;; objc-font-lock-test-setup.el ends here

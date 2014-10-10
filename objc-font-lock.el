@@ -5,7 +5,7 @@
 ;; Author: Anders Lindgren
 ;; Keywords: languages, faces
 ;; Created: 2013-11-26
-;; Version: 0.0.2
+;; Version: 0.0.3
 ;; URL: https://github.com/Lindydancer/objc-font-lock
 
 ;; This program is free software: you can redistribute it and/or modify
@@ -204,45 +204,6 @@ To disable this highlighting, set this to `nil'."
   "Remove font-lock keywords for highlighting Objective-C method calls."
   (font-lock-remove-keywords nil objc-font-lock-prepend-keywords)
   (font-lock-remove-keywords nil objc-font-lock-append-keywords))
-
-
-;; Note: Broken out from `define-minor-mode objc-font-lock' to reduce
-;; the amount of code placed in the package autoload file.
-;;;###autoload
-(defun objc-font-lock-mode-enable-or-disable ()
-  "Enable or disable Objc Font Lock Mode."
-  (if objc-font-lock-mode
-      (objc-font-lock-add-keywords)
-    (objc-font-lock-remove-keywords))
-  ;; As of Emacs 24.4, `font-lock-fontify-buffer' is not legal to
-  ;; call, instead `font-lock-flush' should be used.
-  (if (fboundp 'font-lock-flush)
-      (font-lock-flush)
-    (when font-lock-mode
-      (with-no-warnings
-        (font-lock-fontify-buffer)))))
-
-
-;; Note: Without the "progn", plain autoloads for the functions,
-;; rather than the full call to the define functions, are placed in
-;; the generated autoload file, when installed as a package.
-
-;;;###autoload
-(progn
-  (define-minor-mode objc-font-lock-mode
-    "Minor mode that highlights Objective-C method calls."
-    :group 'objc-font-lock
-    (objc-font-lock-mode-enable-or-disable))
-
-  (define-global-minor-mode objc-font-lock-global-mode objc-font-lock-mode
-    (lambda ()
-      (when (apply 'derived-mode-p objc-font-lock-modes)
-        (objc-font-lock-mode 1)))
-    :group 'objc-font-lock
-    :init-value t)
-
-  (when objc-font-lock-global-mode
-    (objc-font-lock-global-mode 1)))
 
 
 ;; --------------------
@@ -506,5 +467,56 @@ similar expression without those constructs."
                t)
               (t
                nil)))))
+
+
+;; ------------------------------
+;; The modes
+;;
+
+;; Note: Broken out from `define-minor-mode objc-font-lock' to reduce
+;; the amount of code placed in the package autoload file.
+;;;###autoload
+(defun objc-font-lock-mode-enable-or-disable ()
+  "Enable or disable Objc Font Lock Mode."
+  (if objc-font-lock-mode
+      (objc-font-lock-add-keywords)
+    (objc-font-lock-remove-keywords))
+  ;; As of Emacs 24.4, `font-lock-fontify-buffer' is not legal to
+  ;; call, instead `font-lock-flush' should be used.
+  (if (fboundp 'font-lock-flush)
+      (font-lock-flush)
+    (when font-lock-mode
+      (with-no-warnings
+        (font-lock-fontify-buffer)))))
+
+
+;; Note: Without the "progn", plain autoloads for the functions,
+;; rather than the full call to the define functions, are placed in
+;; the generated autoload file, when installed as a package.
+
+;;;###autoload
+(progn
+  (define-minor-mode objc-font-lock-mode
+    "Minor mode that highlights Objective-C method calls."
+    :group 'objc-font-lock
+    (objc-font-lock-mode-enable-or-disable))
+
+  (define-global-minor-mode objc-font-lock-global-mode objc-font-lock-mode
+    (lambda ()
+      (when (apply 'derived-mode-p objc-font-lock-modes)
+        (objc-font-lock-mode 1)))
+    :group 'objc-font-lock
+    :init-value t)
+
+  (when objc-font-lock-global-mode
+    (objc-font-lock-global-mode 1)))
+
+
+;; ------------------------------
+;; The end
+;;
+
+(provide 'objc-font-lock)
+
 
 ;;; objc-font-lock.el ends here.
