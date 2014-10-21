@@ -5,7 +5,7 @@
 ;; Author: Anders Lindgren
 ;; Keywords: languages, faces
 ;; Created: 2013-11-26
-;; Version: 0.0.3
+;; Version: 0.0.4
 ;; URL: https://github.com/Lindydancer/objc-font-lock
 
 ;; This program is free software: you can redistribute it and/or modify
@@ -35,10 +35,13 @@
 ;; By highlighting method calls, it is possible to read the same piece
 ;; of code faster and more accurate.
 ;;
-;; By default, the open and close bracket is highligted using a bright
-;; warning face, the entire method call is highligthed using a grey
-;; background face, and each Objective-C function name component is
-;; highlighted using the font-lock function name face.
+;; By default, the open and close bracket is highlighted using a
+;; bright *warning face*, the entire method call is highligthed using
+;; the standard *highlight face*, and each Objective-C function name
+;; component is highlighted using the *font-lock function name* face.
+;;
+;; For a more sober appearance, you can configure the package to, for
+;; example, only highlight the function name components.
 ;;
 ;; The following screenshot demonstrates the highlighting effect of
 ;; this package:
@@ -47,8 +50,12 @@
 
 ;; Installation:
 ;;
-;; This package is designed to be installed as a "package". Once
-;; installed, it is automatically activated.
+;; Place this package in a directory in the load-path. To activate it,
+;; use *customize* or place the following lines in a suitable init
+;; file:
+;;
+;;    (require 'objc-font-lock-mode)
+;;    (objc-font-lock-global-mode 1)
 
 ;; Customization:
 ;;
@@ -58,7 +65,7 @@
 ;;     [expr func: expr]
 ;;     ^               ^-- objc-font-lock-bracket-face       Warning face
 ;;           ^^^^--------- objc-font-lock-function-name-face Function name face
-;;     ^^^^^^^^^^^^^^^^^-- objc-font-lock-background-face    Grey 85
+;;     ^^^^^^^^^^^^^^^^^-- objc-font-lock-background-face    Highlight
 ;;
 ;; To change the face used, change the face variable. By setting it to
 ;; "nil", the corresponding part of the method call will not be
@@ -117,37 +124,79 @@
   "Highlight method calls in Objective-C."
   :group 'faces)
 
-(defface objc-font-lock-background-face
-  '((((class color) (background light)) (:background "Grey85")))
+
+(defface objc-font-lock-background
+  '((t :inherit highlight))
   "The default face used to highlight an entire Objective-C method call."
   :group 'objc-font-lock)
 
-
-;; Here, standard Font Lock faces are utilized as much as possible.
-;; Unfortunately, there is no suitable backgraound face.
-(defcustom objc-font-lock-bracket-face       'font-lock-warning-face
-  "The face used to highlight brackets in Objective-C method calls.
-To disable this highlighting, set this to `nil'."
-  :type '(choice (const nil)
-                 face)
-  :group 'objc-font-lock)
-(defcustom objc-font-lock-function-name-face 'font-lock-function-name-face
-  "The face used to highlight function names in Objective-C method calls.
-To disable this highlighting, set this to `nil'."
-  :type '(choice (const nil)
-                 face)
-  :group 'objc-font-lock)
-(defcustom objc-font-lock-background-face    'objc-font-lock-background-face
+(defcustom objc-font-lock-background-face 'objc-font-lock-background
   "The face used to highlight an entire Objective-C method call.
-To disable this highlighting, set this to `nil'."
+To disable this highlighting, set this to nil."
   :type '(choice (const nil)
                  face)
   :group 'objc-font-lock)
+
+
+(defface objc-font-lock-bracket
+  '((t :inherit font-lock-warning-face))
+  "The default face used to highlight brackets in Objective-C method calls."
+  :group 'objc-font-lock)
+
+(defcustom objc-font-lock-bracket-face       'objc-font-lock-bracket
+  "The face used to highlight brackets in Objective-C method calls.
+To disable this highlighting, set this to nil."
+  :type '(choice (const nil)
+                 face)
+  :group 'objc-font-lock)
+
+
+(defface objc-font-lock-function-name
+  '((t :inherit font-lock-function-name-face))
+  "\
+The default face used to highlight function names in Objective-C method calls."
+  :group 'objc-font-lock)
+
+(defcustom objc-font-lock-function-name-face 'objc-font-lock-function-name
+  "The face used to highlight function names in Objective-C method calls.
+To disable this highlighting, set this to nil."
+  :type '(choice (const nil)
+                 face)
+  :group 'objc-font-lock)
+
 
 ;;;###autoload
 (defcustom objc-font-lock-modes '(objc-mode)
   "List of major modes where Objc Font Lock Global mode should be enabled."
   :type '(repeat symbol)
+  :group 'objc-font-lock)
+
+
+;; ------------------------------
+;; The modes
+;;
+
+;;;###autoload
+(define-minor-mode objc-font-lock-mode
+  "Minor mode that highlights Objective-C method calls."
+  :group 'objc-font-lock
+  (if objc-font-lock-mode
+      (objc-font-lock-add-keywords)
+    (objc-font-lock-remove-keywords))
+  ;; As of Emacs 24.4, `font-lock-fontify-buffer' is not legal to
+  ;; call, instead `font-lock-flush' should be used.
+  (if (fboundp 'font-lock-flush)
+      (font-lock-flush)
+    (when font-lock-mode
+      (with-no-warnings
+        (font-lock-fontify-buffer)))))
+
+
+;;;###autoload
+(define-global-minor-mode objc-font-lock-global-mode objc-font-lock-mode
+  (lambda ()
+    (when (apply 'derived-mode-p objc-font-lock-modes)
+      (objc-font-lock-mode 1)))
   :group 'objc-font-lock)
 
 
@@ -467,49 +516,6 @@ similar expression without those constructs."
                t)
               (t
                nil)))))
-
-
-;; ------------------------------
-;; The modes
-;;
-
-;; Note: Broken out from `define-minor-mode objc-font-lock' to reduce
-;; the amount of code placed in the package autoload file.
-;;;###autoload
-(defun objc-font-lock-mode-enable-or-disable ()
-  "Enable or disable Objc Font Lock Mode."
-  (if objc-font-lock-mode
-      (objc-font-lock-add-keywords)
-    (objc-font-lock-remove-keywords))
-  ;; As of Emacs 24.4, `font-lock-fontify-buffer' is not legal to
-  ;; call, instead `font-lock-flush' should be used.
-  (if (fboundp 'font-lock-flush)
-      (font-lock-flush)
-    (when font-lock-mode
-      (with-no-warnings
-        (font-lock-fontify-buffer)))))
-
-
-;; Note: Without the "progn", plain autoloads for the functions,
-;; rather than the full call to the define functions, are placed in
-;; the generated autoload file, when installed as a package.
-
-;;;###autoload
-(progn
-  (define-minor-mode objc-font-lock-mode
-    "Minor mode that highlights Objective-C method calls."
-    :group 'objc-font-lock
-    (objc-font-lock-mode-enable-or-disable))
-
-  (define-global-minor-mode objc-font-lock-global-mode objc-font-lock-mode
-    (lambda ()
-      (when (apply 'derived-mode-p objc-font-lock-modes)
-        (objc-font-lock-mode 1)))
-    :group 'objc-font-lock
-    :init-value t)
-
-  (when objc-font-lock-global-mode
-    (objc-font-lock-global-mode 1)))
 
 
 ;; ------------------------------

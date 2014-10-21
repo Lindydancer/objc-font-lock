@@ -1,7 +1,7 @@
 # objc-font-lock - Highlight Objective-C method calls
 
 *Author:* Anders Lindgren<br>
-*Version:* 0.0.3<br>
+*Version:* 0.0.4<br>
 *URL:* [https://github.com/Lindydancer/objc-font-lock](https://github.com/Lindydancer/objc-font-lock)<br>
 
 This package highlights Objective-C method calls.
@@ -16,10 +16,13 @@ they are different from normal C function calls.
 By highlighting method calls, it is possible to read the same piece
 of code faster and more accurate.
 
-By default, the open and close bracket is highligted using a bright
-warning face, the entire method call is highligthed using a grey
-background face, and each Objective-C function name component is
-highlighted using the font-lock function name face.
+By default, the open and close bracket is highlighted using a
+bright *warning face*, the entire method call is highligthed using
+the standard *highlight face*, and each Objective-C function name
+component is highlighted using the *font-lock function name* face.
+
+For a more sober appearance, you can configure the package to, for
+example, only highlight the function name components.
 
 The following screenshot demonstrates the highlighting effect of
 this package:
@@ -28,8 +31,12 @@ this package:
 
 ## Installation
 
-This package is designed to be installed as a "package". Once
-installed, it is automatically activated.
+Place this package in a directory in the load-path. To activate it,
+use *customize* or place the following lines in a suitable init
+file:
+
+       (require 'objc-font-lock-mode)
+       (objc-font-lock-global-mode 1)
 
 ## Customization
 
@@ -39,7 +46,7 @@ Method calls are highlighted as follows:
     [expr func: expr]
     ^               ^-- objc-font-lock-bracket-face       Warning face
           ^^^^--------- objc-font-lock-function-name-face Function name face
-    ^^^^^^^^^^^^^^^^^-- objc-font-lock-background-face    Grey 85
+    ^^^^^^^^^^^^^^^^^-- objc-font-lock-background-face    Highlight
 
 To change the face used, change the face variable. By setting it to
 "nil", the corresponding part of the method call will not be
