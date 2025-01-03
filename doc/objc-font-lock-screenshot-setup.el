@@ -1,4 +1,4 @@
-;; objc-font-lock-screenshot-setup.el --- prepare Emacs for screenshot.
+;; objc-font-lock-screenshot-setup.el --- prepare for screenshot.  -*- lexical-binding: t; -*-
 
 ;; Usage:
 ;;

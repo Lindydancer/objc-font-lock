@@ -1,4 +1,4 @@
-;;; objc-font-lock-test-setup.el --- Setup and execute all tests.
+;;; objc-font-lock-test-setup.el --- Setup and execute all tests.  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 

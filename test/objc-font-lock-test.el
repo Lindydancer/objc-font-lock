@@ -1,4 +1,4 @@
-;; objc-font-lock-test.el --- Tests for Objc Font Lock.
+;; objc-font-lock-test.el --- Tests for `objc-font-lock'.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014 Anders Lindgren
 

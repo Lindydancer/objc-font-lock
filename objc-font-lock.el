@@ -1,11 +1,11 @@
-;;; objc-font-lock.el --- Highlight Objective-C method calls.
+;;; objc-font-lock.el --- Highlight Objective-C method calls.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013-2014 Anders Lindgren
 
 ;; Author: Anders Lindgren
 ;; Keywords: languages, faces
 ;; Created: 2013-11-26
-;; Version: 0.0.4
+;; Version: 0.0.5
 ;; URL: https://github.com/Lindydancer/objc-font-lock
 
 ;; This program is free software: you can redistribute it and/or modify
@@ -294,7 +294,7 @@ assumes that comments and string have been fontified."
                        (error nil)))
                    ;; Skip array subscripts.
                    ;;
-                   ;; Record the start end end location of the first
+                   ;; Record the start and end location of the first
                    ;; complex expression, in case this wasn't an array
                    ;; construct.
                    (save-excursion
@@ -340,7 +340,8 @@ and strings."
     (unless (listp faces)
       (setq faces (list faces)))
     (or (memq 'font-lock-comment-face faces)
-        (memq 'font-lock-string-face faces))))
+        (memq 'font-lock-string-face faces)
+        (memq 'font-lock-doc-face faces))))
 
 
 ;; ----------

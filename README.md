@@ -1,7 +1,7 @@
 # objc-font-lock - Highlight Objective-C method calls
 
 *Author:* Anders Lindgren<br>
-*Version:* 0.0.4<br>
+*Version:* 0.0.5<br>
 *URL:* [https://github.com/Lindydancer/objc-font-lock](https://github.com/Lindydancer/objc-font-lock)<br>
 
 This package highlights Objective-C method calls.

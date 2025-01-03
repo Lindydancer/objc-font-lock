@@ -1,4 +1,4 @@
-;;; objc-font-lock-test-facit.el --- Regression test for Objc Font Lock.
+;;; objc-font-lock-test-facit.el --- Tests for `objc-font-lock'.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014 Anders Lindgren
 
@@ -40,7 +40,7 @@
   "Test that Objective-C FILE is fontified as the .faceup file describes.
 
 FILE is interpreted as relative to this source directory."
-  (faceup-test-font-lock-file 'objc-mode
+  (faceup-test-font-lock-file '(objc-mode objc-font-lock-mode)
                               (concat
                                objc-font-lock-test-facit-dir
                                file)))
